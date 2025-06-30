@@ -1,0 +1,118 @@
+﻿@model BLL.Dtos.OrderDto.UpdateOrderDto
+@{
+    ViewData["Title"] = "Edit Order";
+}
+
+<div class="container">
+    <h2>Edit Order</h2>
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="form-group">
+            <label asp-for="CustomerName" class="control-label"></label>
+            <input asp-for="CustomerName" class="form-control" />
+            <span asp-validation-for="CustomerName" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="OrderDate" class="control-label"></label>
+            <input asp-for="OrderDate" type="date" class="form-control" />
+            <span asp-validation-for="OrderDate" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="UserId" class="control-label">User</label>
+            <select asp-for="UserId" class="form-control" asp-items="ViewBag.Users">
+                <option value="">-- Select User --</option>
+            </select>
+            <span asp-validation-for="UserId" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Order Items</label>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="orderItems">
+                    @for (int i = 0; i < Model.OrderList.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                <select name="OrderList[@i].ProductId" class="form-control">
+                                    <option value="">-- Select Product --</option>
+                                    @foreach (var p in (SelectList)ViewBag.Products)
+                                    {
+                                        if (p.Value == Model.OrderList[i].ProductId.ToString())
+                                        {
+                                            <option value="@p.Value" selected>@p.Text</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@p.Value">@p.Text</option>
+                                        }
+                                    }
+
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="OrderList[@i].Quantity" value="@Model.OrderList[i].Quantity" class="form-control" min="1" />
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-danger remove-item">Remove</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <button type="button" id="addItem" class="btn btn-primary">Add Item</button>
+        </div>
+
+        <div class="form-group mt-3">
+            <input type="submit" value="Save Changes" class="btn btn-success" />
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script type="text/template" id="productDropdownTemplate">
+    <select name="OrderList[__index__].ProductId" class="form-control">
+        <option value="">-- Select Product --</option>
+        @foreach (var product in (SelectList)ViewBag.Products)
+        {
+            <option value="@product.Value">@product.Text</option>
+        }
+    </select>
+</script>
+
+@section Scripts {
+    <script>
+        document.getElementById('addItem').addEventListener('click', function () {
+            var tbody = document.getElementById('orderItems');
+            var rowCount = tbody.rows.length;
+            var dropdownHtml = document.getElementById('productDropdownTemplate').innerHTML.replace(/__index__/g, rowCount);
+
+            var newRow = `<tr>
+                <td>${dropdownHtml}</td>
+                <td><input type="number" name="OrderList[${rowCount}].Quantity" class="form-control" min="1" required /></td>
+                <td><button type="button" class="btn btn-danger remove-item">Remove</button></td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', newRow);
+        });
+
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-item')) {
+                e.target.closest('tr').remove();
+                var rows = document.querySelectorAll('#orderItems tr');
+                rows.forEach((row, index) => {
+                    row.cells[0].querySelector('select').name = `OrderList[${index}].ProductId`;
+                    row.cells[1].querySelector('input').name = `OrderList[${index}].Quantity`;
+                });
+            }
+        });
+    </script>
+}
