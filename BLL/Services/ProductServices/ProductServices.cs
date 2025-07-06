@@ -20,8 +20,8 @@ namespace BLL.Services.ProductServices
             IGenericRepo<Product> repo,
             IWebHostEnvironment webHostEnvironment)
         {
-            _repo = repo ?? throw new ArgumentNullException(nameof(repo));
-            _webHostEnvironment = webHostEnvironment ?? throw new ArgumentNullException(nameof(webHostEnvironment));
+            _repo = repo;
+            _webHostEnvironment = webHostEnvironment;
             _imagesPath = Path.Combine(_webHostEnvironment.WebRootPath, FileSetting.ImagesPath);
 
             if (!Directory.Exists(_imagesPath))

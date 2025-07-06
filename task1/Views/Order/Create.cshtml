@@ -7,19 +7,17 @@
     <h2>Create Order</h2>
     <form asp-action="Create" method="post">
         <div class="form-group">
-            <label asp-for="CustomerName" class="control-label"></label>
-            <input asp-for="CustomerName" class="form-control" />
-            <span asp-validation-for="CustomerName" class="text-danger"></span>
+            <label asp-for="UserId" class="control-label">Customer</label>
+            <select asp-for="UserId" class="form-control" asp-items="ViewBag.Customers">
+                <option value="">-- Select Customer --</option>
+            </select>
+            <span asp-validation-for="UserId" class="text-danger"></span>
         </div>
+
         <div class="form-group">
             <label asp-for="OrderDate" class="control-label"></label>
             <input asp-for="OrderDate" type="date" class="form-control" />
             <span asp-validation-for="OrderDate" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="UserId" class="control-label"></label>
-            <input asp-for="UserId" class="form-control" />
-            <span asp-validation-for="UserId" class="text-danger"></span>
         </div>
 
         <div class="form-group">
@@ -80,10 +78,10 @@
             var dropdownHtml = document.getElementById('productDropdownTemplate').innerHTML.replace(/__index__/g, rowCount);
 
             var newRow = `<tr>
-                        <td>${dropdownHtml}</td>
-                        <td><input type="number" name="OrderList[${rowCount}].Quantity" class="form-control" min="1" required /></td>
-                        <td><button type="button" class="btn btn-danger remove-item">Remove</button></td>
-                    </tr>`;
+                                <td>${dropdownHtml}</td>
+                                <td><input type="number" name="OrderList[${rowCount}].Quantity" class="form-control" min="1" required /></td>
+                                <td><button type="button" class="btn btn-danger remove-item">Remove</button></td>
+                            </tr>`;
             tbody.insertAdjacentHTML('beforeend', newRow);
         });
 

@@ -1,42 +1,48 @@
 ﻿using BLL.Dtos.OrderDto;
 using BLL.Dtos.OrderListDto;
 using BLL.Services.OrderService;
-using BLL.Services.OrderListServices;
 using BLL.Services.ProductServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using DAL.Models;
+using BLL.Services.OrderListServices;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace Web.Controllers
 {
     public class OrderController : Controller
     {
         private readonly IOrderService _orderService;
-        private readonly IOrderListService _orderListService;
         private readonly IProductServices _productService;
+        private readonly IOrderListService _orderListService;
         private readonly UserManager<AppUser> _userManager;
 
-        public OrderController(IOrderService orderService, IOrderListService orderListService, IProductServices productService  ,UserManager<AppUser> userManager)
+        public OrderController(IOrderService orderService, 
+            IProductServices productService ,
+            IOrderListService orderListService,
+            UserManager<AppUser> userManager)
         {
             _orderService = orderService;
-            _orderListService = orderListService;
             _productService = productService;
+            _orderListService = orderListService;
             _userManager = userManager;
 
         }
 
-        public async Task<IActionResult> Index(string customer, DateTime? dateFrom, DateTime? dateTo)
+        public async Task<IActionResult> Index(string customer, DateTime? date)
         {
             var orders = await _orderService.GetAllAsync();
             if (!string.IsNullOrEmpty(customer))
                 orders = orders.Where(o => o.CustomerName.Contains(customer)).ToList();
-            if (dateFrom.HasValue)
-                orders = orders.Where(o => o.OrderDate >= dateFrom.Value).ToList();
-            if (dateTo.HasValue)
-                orders = orders.Where(o => o.OrderDate <= dateTo.Value).ToList();
+            if (date.HasValue)
+                orders = orders.Where(o => o.OrderDate.Date == date.Value.Date).ToList();
+            
+            ViewBag.TotalOrders = orders.Count;
+
+            ViewBag.TotalProducts = _productService.GetAllProductsAsync().Result.Count();
             return View(orders);
         }
 
@@ -44,10 +50,14 @@ namespace Web.Controllers
         {
             var products = await _productService.GetAllProductsAsync();
             ViewBag.Products = new SelectList(products, "Id", "Name");
+            
+            var users = await _userManager.Users.ToListAsync();
+            ViewBag.Customers = new SelectList(users, "Id", "UserName");
 
             return View(new CreateOrderDto
             {
-                OrderList = new List<CreateOrderlistDto> { new CreateOrderlistDto() }
+                OrderList = new List<CreateOrderlistDto>()
+
             });
         }
 
@@ -62,6 +72,10 @@ namespace Web.Controllers
 
             var products = await _productService.GetAllProductsAsync();
             ViewBag.Products = new SelectList(products, "Id", "Name");
+
+            var users = await _userManager.Users.ToListAsync();
+            ViewBag.Customers = new SelectList(users, "Id", "UserName");
+
             return View(dto);
         }
 

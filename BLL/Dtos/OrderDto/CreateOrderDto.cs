@@ -1,4 +1,5 @@
 ﻿using BLL.Dtos.OrderListDto;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +10,13 @@ namespace BLL.Dtos.OrderDto
 {
     public class CreateOrderDto
     {
-        public string CustomerName { get; set; } = null!;
-
         public DateTime OrderDate { get; set; }
 
         public int UserId { get; set; }
 
         public List<CreateOrderlistDto> OrderList { get; set; } = new List<CreateOrderlistDto>();
+
+        public IEnumerable<SelectListItem>? Users { get; set; }
+
     }
 }

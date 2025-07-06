@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BLL.Services.OrderService
@@ -22,17 +21,27 @@ namespace BLL.Services.OrderService
 
         public async Task CreateAsync(CreateOrderDto dto)
         {
+            var user = await _context.Users.FindAsync(dto.UserId);
+            if (user == null)
+                throw new KeyNotFoundException($"User with ID {dto.UserId} not found.");
+
             var order = new Order
             {
-                CustomerName = dto.CustomerName,
+                CustomerName = user.UserName,
                 OrderDate = dto.OrderDate,
                 UserId = dto.UserId,
                 OrderList = new List<OrderList>()
             };
 
+            var productIds = dto.OrderList.Select(x => x.ProductId).ToList();
+
+            var products = await _context.Products
+                .Where(p => productIds.Contains(p.Id))
+                .ToListAsync();
+
             foreach (var item in dto.OrderList)
             {
-                var product = await _context.Products.FindAsync(item.ProductId);
+                var product = products.FirstOrDefault(p => p.Id == item.ProductId);
                 if (product == null)
                     throw new KeyNotFoundException($"Product with ID {item.ProductId} not found.");
 
@@ -103,11 +112,15 @@ namespace BLL.Services.OrderService
 
             if (order == null) return false;
 
-            order.CustomerName = dto.CustomerName;
+            var user = await _context.Users.FindAsync(dto.UserId);
+            if (user == null)
+                throw new KeyNotFoundException($"User with ID {dto.UserId} not found.");
+
+            order.CustomerName = user.UserName;
             order.OrderDate = dto.OrderDate;
             order.UserId = dto.UserId;
 
-            _context.OrderLists.RemoveRange(order.OrderList); 
+            _context.OrderLists.RemoveRange(order.OrderList);
 
             order.OrderList = new List<OrderList>();
             foreach (var item in dto.OrderList)

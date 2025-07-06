@@ -2,27 +2,28 @@
 
 @{
     ViewData["Title"] = "Order";
+    var customerValue = Context.Request.Query["customer"].ToString();
+    var dateValue = Context.Request.Query["date"].ToString();
 }
 
 <div class="container">
     <h2>Order</h2>
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <input type="text" class="form-control" id="customer" name="customer" placeholder="Customer" />
+    <form method="get" asp-action="Index">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="customer" name="customer" placeholder="Customer" value="@customerValue" />
+            </div>
+            <div class="col-md-4">
+                <input type="date" class="form-control" id="date" name="date" placeholder="Date" value="@dateValue" />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+            <div class="col-md-2">
+                <a asp-action="Create" class="btn btn-primary">Add New Order</a>
+            </div>
         </div>
-        <div class="col-md-2">
-            <input type="date" class="form-control" id="dateFrom" name="dateFrom" placeholder="Date from" />
-        </div>
-        <div class="col-md-2">
-            <input type="date" class="form-control" id="dateTo" name="dateTo" placeholder="Date to" />
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary">Search</button>
-        </div>
-        <div class="col-md-2">
-            <a asp-action="Create" class="btn btn-primary">Add New Order</a>
-        </div>
-    </div>
+    </form>
     <table class="table table-striped">
         <thead class="thead-dark">
             <tr>
