@@ -99,7 +99,6 @@ namespace BLL.Services.ProductServices
                 throw new Exception("Failed to create product.", ex);
             }
         }
-
         public async Task<UpdateProductDto> UpdateProductAsync(UpdateProductDto model)
         {
             if (model == null) throw new ArgumentNullException(nameof(model));
@@ -107,30 +106,33 @@ namespace BLL.Services.ProductServices
             var product = await _repo.GetByIdAsync(model.Id);
             if (product == null) throw new KeyNotFoundException("Product not found");
 
-            var oldImage = product.imgUrl;
-
             product.Name = model.Name;
             product.Price = model.Price;
             product.Description = model.Description;
 
-            if (!string.IsNullOrEmpty(model.ImageUrl) && model.ImageUrl != oldImage)
+            if (model.NewCover != null && model.NewCover.Length > 0)
             {
-                var newImageName = $"{Guid.NewGuid()}{Path.GetExtension(model.ImageUrl)}";
+                var newImageName = $"{Guid.NewGuid()}{Path.GetExtension(model.NewCover.FileName)}";
                 var newImagePath = Path.Combine(_imagesPath, newImageName);
 
                 try
                 {
-                    File.Copy(model.ImageUrl, newImagePath);
-                    product.imgUrl = newImageName;
-
-                    if (!string.IsNullOrEmpty(oldImage))
+                    using (var stream = new FileStream(newImagePath, FileMode.Create))
                     {
-                        var oldImagePath = Path.Combine(_imagesPath, oldImage);
+                        await model.NewCover.CopyToAsync(stream);
+                    }
+
+                    // حذف الصورة القديمة
+                    if (!string.IsNullOrEmpty(product.imgUrl))
+                    {
+                        var oldImagePath = Path.Combine(_imagesPath, product.imgUrl);
                         if (File.Exists(oldImagePath))
                         {
                             File.Delete(oldImagePath);
                         }
                     }
+
+                    product.imgUrl = newImageName;
                 }
                 catch (Exception ex)
                 {
@@ -149,6 +151,7 @@ namespace BLL.Services.ProductServices
                 throw new Exception("Failed to update product.", ex);
             }
         }
+
 
         public async Task DeleteProductAsync(int id)
         {

@@ -19,52 +19,7 @@ namespace task1.Controllers
             _signInManager = signInManager;
         }
 
-        [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public IActionResult AddAdmin()
-        {
-            return View();
-        }
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddAdmin(Register newUser)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = new AppUser
-                {
-                    //FullNameUser = newUser.FullNameUser,
-                    UserName = newUser.FirstName,
-                    Email = newUser.Email,
-                    FirstName = newUser.FirstName,
-                    LastName = newUser.LastName,
-                    PhoneNumber = newUser.PhoneNumber,
-                    Address = newUser.Address,
-                };
-
-                var result = await _userManager.CreateAsync(user, newUser.Password);
-                if (result.Succeeded)
-                {
-                    //Assign Role to User
-                    await _userManager.AddToRoleAsync(user, "Admin");
-
-                    //Create Cookie
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                        // Log the error for debugging
-                        Console.WriteLine($"Error: {error.Code} - {error.Description}");
-                    }
-                }
-            }
-            return View(newUser);
-        }
+        
         [HttpGet]
         public IActionResult Register()
         {
@@ -134,7 +89,6 @@ namespace task1.Controllers
                     var result = await _userManager.CheckPasswordAsync(user, userLogin.Password);
                     if (result == true)
                     {
-                        //await _signInManager.SignInAsync(user, userLogin.RememberMe );
                         var Claims = new List<Claim>
                         {
                             new Claim(ClaimTypes.Name, user.UserName),
@@ -152,6 +106,51 @@ namespace task1.Controllers
             }
             return View();
         }
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public IActionResult AddAdmin()
+        {
+            return View();
+        }
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddAdmin(Register newUser)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new AppUser
+                {
+                    //FullNameUser = newUser.FullNameUser,
+                    UserName = newUser.FirstName,
+                    Email = newUser.Email,
+                    FirstName = newUser.FirstName,
+                    LastName = newUser.LastName,
+                    PhoneNumber = newUser.PhoneNumber,
+                    Address = newUser.Address,
+                };
 
+                var result = await _userManager.CreateAsync(user, newUser.Password);
+                if (result.Succeeded)
+                {
+                    //Assign Role to User
+                    await _userManager.AddToRoleAsync(user, "Admin");
+
+                    //Create Cookie
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                        // Log the error for debugging
+                        Console.WriteLine($"Error: {error.Code} - {error.Description}");
+                    }
+                }
+            }
+            return View(newUser);
+        }
     }
 }

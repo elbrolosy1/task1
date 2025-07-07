@@ -58,7 +58,7 @@ namespace task1.Controllers
                 Name = product.Name,
                 Price = product.Price,
                 Description = product.Description,
-                ImageUrl = product.ImageUrl
+                OldImageUrl = product.ImageUrl
             };
 
             return View(model);
